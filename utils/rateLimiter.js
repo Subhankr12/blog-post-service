@@ -41,4 +41,4 @@ const checkRequestLimit = async (req, res, next) => {
   }
 };
 
-module.exports = { checkRequestLimit };
+module.exports = { checkRequestLimit, updateUserLimit };

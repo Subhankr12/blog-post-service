@@ -38,10 +38,10 @@ const createBlog = async (req, res) => {
     req.validate('body', {
       title: { type: 'string' },
       content: { type: 'string' },
-      userId: { type: 'string', format: 'mongoId' },
-    }, ['title', 'userId']);
+    }, ['title']);
 
-    const { title, content, userId } = req.body;
+    const { _id: userId } = req.user;
+    const { title, content } = req.body;
     await createNewBlog({ title, content, userId });
     return successResponse({ res, message: 'Blog created successfully' });
   } catch (error) {
