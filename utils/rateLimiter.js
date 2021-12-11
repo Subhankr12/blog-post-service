@@ -4,13 +4,17 @@ const { REQUEST_LIMIT, LIMIT_WINDOW, ROLES } = require('./constants');
 
 const updateUserLimit = async (params) => {
   const {
-    userId, requestLeft = REQUEST_LIMIT - 1, renewLimit = false, currentRenewalTime,
+    userId,
+    requestLeft = REQUEST_LIMIT - 1,
+    maxLimit = REQUEST_LIMIT - 1,
+    renewLimit = false,
+    currentRenewalTime,
   } = params;
   const currentTime = new Date();
   const currentEpoch = +currentTime;
   const renewalTime = renewLimit ? currentEpoch + LIMIT_WINDOW * 1000 : currentRenewalTime;
 
-  const data = { requestLeft, limitRenewalTime: renewalTime };
+  const data = { requestLeft, limitRenewalTime: renewalTime, maxLimit };
   await redis.set(userId, data);
 };
 
@@ -23,12 +27,15 @@ const checkRequestLimit = async (req, res, next) => {
     const userLimitData = await redis.get(userId);
     if (!userLimitData) await updateUserLimit({ userId, renewLimit: true });
     else {
-      const { requestLeft, limitRenewalTime } = userLimitData;
+      const { requestLeft, limitRenewalTime, maxLimit } = userLimitData;
       const currentEpoch = +(new Date());
-      if (currentEpoch > limitRenewalTime) await updateUserLimit({ userId, renewLimit: true });
-      else if (requestLeft) {
+      if (currentEpoch > limitRenewalTime) {
         await updateUserLimit({
-          userId, requestLeft: requestLeft - 1, currentRenewalTime: limitRenewalTime,
+          userId, renewLimit: true, maxLimit,
+        });
+      } else if (requestLeft) {
+        await updateUserLimit({
+          userId, requestLeft: requestLeft - 1, currentRenewalTime: limitRenewalTime, maxLimit,
         });
       } else {
         const error = { code: 429, message: 'Request Limit Reached' };
