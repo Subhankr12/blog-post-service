@@ -6,7 +6,7 @@ const updateUserLimit = async (params) => {
   const {
     userId,
     requestLeft = REQUEST_LIMIT - 1,
-    maxLimit = REQUEST_LIMIT - 1,
+    maxLimit = REQUEST_LIMIT,
     renewLimit = false,
     currentRenewalTime,
   } = params;
