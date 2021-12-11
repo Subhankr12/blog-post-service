@@ -31,7 +31,7 @@ const checkRequestLimit = async (req, res, next) => {
       const currentEpoch = +(new Date());
       if (currentEpoch > limitRenewalTime) {
         await updateUserLimit({
-          userId, renewLimit: true, maxLimit,
+          userId, renewLimit: true, maxLimit, requestLeft: maxLimit,
         });
       } else if (requestLeft) {
         await updateUserLimit({
